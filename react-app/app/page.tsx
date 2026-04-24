@@ -18,12 +18,17 @@ export default async function OverviewPage({ searchParams }: { searchParams: Sea
   const sp = await searchParams
   const category = typeof sp.category === "string" ? sp.category : undefined
 
+  // Widest window the backend allows (see _clamp_int in web-api/src/routes.py)
+  // so the Overview page reflects the full history we seed/collect, not just
+  // the current ISO week.
+  const OVERVIEW_WEEKS = 12
+
   const [categoriesRes, skillsRes, companiesThisWeek, companiesTrendRes, jobsRes] =
     await Promise.all([
       getCategories(),
-      getSkillTrends({ weeks: 4, category }),
+      getSkillTrends({ weeks: OVERVIEW_WEEKS, category }),
       getCompanyTrends({ weeks: 1, category }),
-      getCompanyTrends({ weeks: 4, category }),
+      getCompanyTrends({ weeks: OVERVIEW_WEEKS, category }),
       getJobs({ category, limit: 1, offset: 0 }),
     ])
 
@@ -91,7 +96,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Sea
       <section aria-labelledby="skills-heading" className="flex flex-col gap-3">
         <SectionHeader
           title="Skill trends"
-          description="Top 5 skills over the last 4 weeks."
+          description={`Top 5 skills over the last ${OVERVIEW_WEEKS} weeks.`}
         />
         <Suspense fallback={null}>
           {skillsRes.data.length ? (
@@ -109,14 +114,20 @@ export default async function OverviewPage({ searchParams }: { searchParams: Sea
       <section aria-labelledby="companies-heading" className="flex flex-col gap-3">
         <SectionHeader
           title="Top hiring companies"
-          description="Most postings this week, filtered by category."
+          description={`Most postings over the last ${OVERVIEW_WEEKS} weeks${
+            category ? `, filtered by ${category}` : ""
+          }.`}
         />
-        {companiesThisWeek.data.length ? (
-          <CompanyRanking points={companiesThisWeek.data} topN={10} />
+        {companiesTrendRes.data.length ? (
+          <CompanyRanking points={companiesTrendRes.data} topN={10} />
         ) : (
           <EmptyState
             title="No company data yet"
-            description="Try clearing the category filter."
+            description={
+              category
+                ? "This category has no postings in the recent window. Try clearing the filter."
+                : "No company postings in the recent window."
+            }
             icon={Building2}
           />
         )}
