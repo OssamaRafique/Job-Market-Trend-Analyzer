@@ -7,8 +7,9 @@ org = "fantisco"
 
 [env]
   HEALTH_PORT = "8080"
-  # Rolling window the analyzer aggregates over. 35d = last 5 ISO weeks.
-  ANALYZER_WINDOW_DAYS = "35"
+  # Rolling window the analyzer aggregates over. 98d = last 14 ISO weeks
+  # (matches data-collector/seed.py's SEED_WEEKS_BACK default).
+  ANALYZER_WINDOW_DAYS = "98"
 
 [processes]
   app = "python analyzer_consumer.py"

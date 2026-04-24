@@ -32,7 +32,7 @@ from shared.db import create_app, db, ensure_schema
 from shared.gateway import JobDataGateway
 from shared.models import CompanyTrend, Job, SkillTrend
 
-WEEKS_BACK = int(os.environ.get("SEED_WEEKS_BACK", "5"))
+WEEKS_BACK = int(os.environ.get("SEED_WEEKS_BACK", "14"))
 PAGES_PER_CATEGORY = int(os.environ.get("SEED_PAGES", str(DEFAULT_PAGES)))
 SEED_RNG = int(os.environ.get("SEED_RANDOM_SEED", "0"))
 
