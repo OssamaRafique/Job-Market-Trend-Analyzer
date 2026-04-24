@@ -218,8 +218,13 @@ class TrendDataGateway:
         self, *, weeks: int = 4, category: Optional[str] = None
     ) -> list[SkillTrendRecord]:
         stmt = select(SkillTrend).order_by(SkillTrend.week.desc(), SkillTrend.count.desc())
+        # When no category is requested, return the global rollup only (the
+        # aggregator stores a NULL-category row per (skill, week) alongside
+        # per-category rows); mixing them would look like duplicates.
         if category:
             stmt = stmt.where(SkillTrend.category == category)
+        else:
+            stmt = stmt.where(SkillTrend.category.is_(None))
         latest_weeks = self._latest_weeks(SkillTrend, weeks, category)
         if not latest_weeks:
             return []
@@ -239,12 +244,16 @@ class TrendDataGateway:
         )
         if category:
             stmt = stmt.where(CompanyTrend.category == category)
+        else:
+            stmt = stmt.where(CompanyTrend.category.is_(None))
         return [_to_company_record(t) for t in db.session.execute(stmt).scalars()]
 
     def _latest_weeks(self, model, weeks: int, category: Optional[str]) -> list[str]:
         stmt = select(model.week).distinct().order_by(model.week.desc()).limit(weeks)
         if category:
             stmt = stmt.where(model.category == category)
+        else:
+            stmt = stmt.where(model.category.is_(None))
         return [row[0] for row in db.session.execute(stmt).all()]
 
     def clear_week(self, week: str) -> int:

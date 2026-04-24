@@ -50,18 +50,16 @@ class FakeTrendDataGateway:
     def list_skill_trends(
         self, *, weeks: int = 4, category: Optional[str] = None
     ) -> list[SkillTrendRecord]:
-        rows = self.skills
         if category:
-            rows = [r for r in rows if r.category == category]
-        return rows
+            return [r for r in self.skills if r.category == category]
+        return [r for r in self.skills if r.category is None]
 
     def list_company_trends(
         self, *, weeks: int = 4, category: Optional[str] = None
     ) -> list[CompanyTrendRecord]:
-        rows = self.companies
         if category:
-            rows = [r for r in rows if r.category == category]
-        return rows
+            return [r for r in self.companies if r.category == category]
+        return [r for r in self.companies if r.category is None]
 
     def upsert_skill_trend(
         self, *, skill: str, count: int, week: str, category: Optional[str] = None

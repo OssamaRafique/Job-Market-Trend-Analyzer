@@ -184,3 +184,34 @@ def test_company_trend_upsert_and_list(db_app):
     rows = gateway.list_company_trends(weeks=4)
     assert rows[0].company == "Acme"
     assert rows[0].count == 4
+
+
+def test_unfiltered_listing_returns_only_global_rows(db_app):
+    """Without a category filter the API should not show duplicate
+    (skill, week) / (company, week) rows just because we also store a
+    per-category breakdown.
+    """
+    from shared.gateway import TrendDataGateway
+
+    gateway = TrendDataGateway()
+    gateway.upsert_skill_trend(skill="python", count=10, week="2026-W17")
+    gateway.upsert_skill_trend(
+        skill="python", count=6, week="2026-W17", category="Software Engineer"
+    )
+    gateway.upsert_skill_trend(
+        skill="python", count=4, week="2026-W17", category="Data Science"
+    )
+    gateway.upsert_company_trend(company="Acme", count=9, week="2026-W17")
+    gateway.upsert_company_trend(
+        company="Acme", count=5, week="2026-W17", category="Software Engineer"
+    )
+
+    skill_rows = gateway.list_skill_trends(weeks=4)
+    assert [(r.skill, r.week, r.count) for r in skill_rows] == [
+        ("python", "2026-W17", 10)
+    ]
+
+    company_rows = gateway.list_company_trends(weeks=4)
+    assert [(r.company, r.week, r.count) for r in company_rows] == [
+        ("Acme", "2026-W17", 9)
+    ]
