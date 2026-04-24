@@ -25,6 +25,10 @@ class Job(db.Model):
     category = db.Column(db.String(100))
     level = db.Column(db.String(50))
     location = db.Column(db.String(100))
+    # Raw job description HTML from the upstream API. Nullable so older rows
+    # collected before we captured descriptions remain valid. The analyzer
+    # scans this (stripped of tags) for skill keywords.
+    description = db.Column(db.Text, nullable=True)
     date_collected = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
     def __repr__(self) -> str:
@@ -71,6 +75,7 @@ class JobRecord:
     location: Optional[str]
     date_collected: datetime
     source_id: Optional[str] = None
+    description: Optional[str] = None
 
 
 @dataclass(frozen=True)

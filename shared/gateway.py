@@ -27,6 +27,7 @@ def _to_job_record(job: Job) -> JobRecord:
         location=job.location,
         date_collected=job.date_collected,
         source_id=job.source_id,
+        description=job.description,
     )
 
 
@@ -55,6 +56,7 @@ class JobDataGateway:
         location: Optional[str],
         date_collected: Optional[datetime] = None,
         source_id: Optional[str] = None,
+        description: Optional[str] = None,
     ) -> JobRecord:
         job = Job(
             source_id=source_id,
@@ -63,6 +65,7 @@ class JobDataGateway:
             category=category,
             level=level,
             location=location,
+            description=description,
             date_collected=date_collected or datetime.utcnow(),
         )
         db.session.add(job)
@@ -108,6 +111,7 @@ class JobDataGateway:
                     category=j.get("category"),
                     level=j.get("level"),
                     location=j.get("location"),
+                    description=j.get("description"),
                     date_collected=j.get("date_collected") or now,
                 )
             )

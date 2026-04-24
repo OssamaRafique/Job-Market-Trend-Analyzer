@@ -57,4 +57,7 @@ class MuseClient:
             "category": categories[0].get("name"),
             "level": levels[0].get("name"),
             "location": locations[0].get("name"),
+            # Full HTML description. The analyzer strips tags and mines this
+            # for skill keywords (titles alone are too sparse to trend on).
+            "description": raw.get("contents"),
         }

@@ -9,6 +9,7 @@ from aggregations import (
     KNOWN_SKILLS,
     aggregate_companies,
     aggregate_skills,
+    tokenize_text,
     tokenize_title,
     week_key,
 )
@@ -20,6 +21,7 @@ class FakeJob:
     company: Optional[str]
     category: Optional[str]
     date_collected: datetime
+    description: Optional[str] = None
 
 
 def test_week_key_format():
@@ -66,6 +68,32 @@ def test_aggregate_skills_skips_jobs_with_no_known_skill():
     when = datetime(2026, 4, 20)
     jobs = [FakeJob("Project Manager", "A", "Product", when)]
     assert aggregate_skills(jobs) == {}
+
+
+def test_aggregate_skills_mines_description_html():
+    when = datetime(2026, 4, 20)
+    jobs = [
+        FakeJob(
+            "Account Executive",
+            "Acme",
+            "Sales",
+            when,
+            description=(
+                "<p>You'll own the pipeline in <b>Salesforce</b> and "
+                "partner with RevOps on <i>Tableau</i> dashboards.</p>"
+            ),
+        )
+    ]
+    result = aggregate_skills(jobs)
+    assert result[("salesforce", "2026-W17", None)] == 1
+    assert result[("tableau", "2026-W17", None)] == 1
+
+
+def test_tokenize_text_strips_html_tags_and_entities():
+    text = "<p>We love <b>Python</b>&nbsp;and <i>React</i>.</p>"
+    skills = tokenize_text(text)
+    assert "python" in skills
+    assert "react" in skills
 
 
 def test_aggregate_companies_counts_postings_per_week():

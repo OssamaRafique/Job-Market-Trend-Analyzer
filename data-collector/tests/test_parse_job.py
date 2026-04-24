@@ -12,6 +12,7 @@ def test_parse_job_happy_path():
         "categories": [{"name": "Software Engineer"}],
         "levels": [{"name": "Senior Level"}],
         "locations": [{"name": "Remote"}],
+        "contents": "<p>We are looking for...</p>",
     }
     result = MuseClient.parse_job(raw)
     assert result == {
@@ -21,6 +22,7 @@ def test_parse_job_happy_path():
         "category": "Software Engineer",
         "level": "Senior Level",
         "location": "Remote",
+        "description": "<p>We are looking for...</p>",
     }
 
 
@@ -32,6 +34,7 @@ def test_parse_job_missing_fields_defaults():
     assert result["level"] is None
     assert result["location"] is None
     assert result["source_id"] is None
+    assert result["description"] is None
 
 
 def test_parse_job_stringifies_numeric_source_id():
