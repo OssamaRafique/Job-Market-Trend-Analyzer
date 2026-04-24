@@ -1,6 +1,3 @@
-// Local fixtures used when the backend is unreachable or NEXT_PUBLIC_API_URL is unset.
-// Shapes match the API contract documented in section 5 of the UI specification.
-
 import type { Category, CompanyTrendPoint, JobPosting, SkillTrendPoint } from "./types"
 
 export const FIXTURE_CATEGORIES: Category[] = [

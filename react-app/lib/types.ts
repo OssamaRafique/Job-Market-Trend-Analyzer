@@ -1,5 +1,3 @@
-// Shared types that mirror the backend API contract (section 5 of the spec).
-
 export type Category = string
 
 export interface SkillTrendPoint {

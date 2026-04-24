@@ -1,0 +1,106 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    name: Gate on CI success
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main')
+    steps:
+      - run: echo "CI passed on main — proceeding to deploy."
+
+  deploy-backend:
+    name: Deploy ${{ matrix.service.app }}
+    needs: gate
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - { app: "job-market-trend-analyzer",           config: "web-api/fly.toml",        dockerfile: "web-api/Dockerfile" }
+          - { app: "job-market-trend-analyzer-collector", config: "data-collector/fly.toml", dockerfile: "data-collector/Dockerfile" }
+          - { app: "job-market-trend-analyzer-analyzer",  config: "data-analyzer/fly.toml",  dockerfile: "data-analyzer/Dockerfile" }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Deploy ${{ matrix.service.app }}
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: >-
+          flyctl deploy
+          --config ${{ matrix.service.config }}
+          --dockerfile ${{ matrix.service.dockerfile }}
+          --remote-only
+
+  deploy-frontend:
+    name: Deploy frontend (react-app)
+    needs: gate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: react-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+          run_install: false
+      - name: Install and build (sanity-check the Docker-built bundle)
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build
+        env:
+          NEXT_PUBLIC_API_URL: https://job-market-trend-analyzer.fly.dev
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Deploy react-app
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: flyctl deploy --remote-only
+
+  smoke-test:
+    name: Smoke test deployed API
+    needs: [deploy-backend, deploy-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Curl /health until it returns 200
+        run: |
+          set -eu
+          url="https://job-market-trend-analyzer.fly.dev/health"
+          for attempt in 1 2 3 4 5 6; do
+            echo "Attempt $attempt: GET $url"
+            status=$(curl -sS -o /tmp/health.json -w "%{http_code}" "$url" || true)
+            if [ "$status" = "200" ]; then
+              echo "API healthy:"
+              cat /tmp/health.json
+              exit 0
+            fi
+            echo "Got HTTP $status; retrying in 10s..."
+            sleep 10
+          done
+          echo "Health check failed after 6 attempts" >&2
+          exit 1
+      - name: Curl /api/categories (content check)
+        run: |
+          set -eu
+          url="https://job-market-trend-analyzer.fly.dev/api/categories"
+          curl -fsS "$url" | tee /tmp/categories.json
+          test -s /tmp/categories.json

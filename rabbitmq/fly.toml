@@ -1,0 +1,35 @@
+app = "job-market-trend-analyzer-rabbitmq"
+primary_region = "iad"
+org = "fantisco"
+
+# Deploy the official RabbitMQ image directly — no custom Dockerfile needed.
+[build]
+  image = "rabbitmq:3-management-alpine"
+
+[env]
+  RABBITMQ_DEFAULT_VHOST = "/"
+
+# Persist queues/messages across machine restarts.
+[mounts]
+  source = "rabbitmq_data"
+  destination = "/var/lib/rabbitmq"
+
+# AMQP protocol (5672) — only reachable via Fly's private .internal network by
+# sibling apps; never expose 5672 publicly.
+[[services]]
+  protocol = "tcp"
+  internal_port = 5672
+
+# Management UI (15672) — expose over HTTPS so we can inspect queues.
+[[services]]
+  protocol = "tcp"
+  internal_port = 15672
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1

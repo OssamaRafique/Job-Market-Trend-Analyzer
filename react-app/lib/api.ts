@@ -1,7 +1,3 @@
-// Thin wrapper around the Job Market Trend Analyzer REST API.
-// Falls back to local fixtures when NEXT_PUBLIC_API_URL is unset or the backend is unreachable,
-// matching section 13 of the UI specification.
-
 import {
   FIXTURE_CATEGORIES,
   buildAllJobs,
