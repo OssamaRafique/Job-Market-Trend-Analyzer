@@ -8,8 +8,8 @@ to Postgres via `JobDataGateway`. One invocation = one collection run.
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `DATABASE_URL` | yes | - | Postgres connection string |
-| `COLLECTOR_CATEGORIES` | no | `Software Engineer,Data and Analytics,Data Science,DevOps and Sysadmin` | Comma-separated list |
-| `COLLECTOR_PAGES` | no | `5` | Pages to fetch per category |
+| `COLLECTOR_CATEGORIES` | no | `Software Engineering,Data and Analytics,Data Science,Design and UX,Product,Project Management,Account Management,Sales,Customer Service` | Comma-separated list |
+| `COLLECTOR_PAGES` | no | `10` | Pages to fetch per category |
 | `MUSE_API_URL` | no | `https://www.themuse.com/api/public/jobs` | Override for testing |
 | `LOG_LEVEL` | no | `INFO` | |
 | `AMQP_URL` | Phase A only | - | RabbitMQ URL when running as a queue consumer |

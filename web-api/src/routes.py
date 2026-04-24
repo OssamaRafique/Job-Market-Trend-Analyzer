@@ -58,10 +58,15 @@ def list_categories():
         # Seed with the same defaults the collector uses so the UI still has
         # something to show on a freshly provisioned database.
         categories = [
-            "Software Engineer",
+            "Software Engineering",
             "Data and Analytics",
             "Data Science",
-            "DevOps and Sysadmin",
+            "Design and UX",
+            "Product",
+            "Project Management",
+            "Account Management",
+            "Sales",
+            "Customer Service",
         ]
     return jsonify(categories)
 

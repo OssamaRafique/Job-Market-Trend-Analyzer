@@ -25,17 +25,15 @@ import random
 import sys
 from datetime import datetime, timedelta
 
+from collector import DEFAULT_CATEGORIES, DEFAULT_PAGES
 from muse_client import MuseClient
 
 from shared.db import create_app, db, ensure_schema
 from shared.gateway import JobDataGateway
 from shared.models import CompanyTrend, Job, SkillTrend
 
-DEFAULT_CATEGORIES = (
-    "Software Engineer,Data and Analytics,Data Science,DevOps and Sysadmin"
-)
 WEEKS_BACK = int(os.environ.get("SEED_WEEKS_BACK", "5"))
-PAGES_PER_CATEGORY = int(os.environ.get("SEED_PAGES", "3"))
+PAGES_PER_CATEGORY = int(os.environ.get("SEED_PAGES", str(DEFAULT_PAGES)))
 SEED_RNG = int(os.environ.get("SEED_RANDOM_SEED", "0"))
 
 

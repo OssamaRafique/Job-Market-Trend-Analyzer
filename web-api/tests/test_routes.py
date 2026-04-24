@@ -83,7 +83,7 @@ def test_categories_falls_back_to_defaults_when_empty(app):
     resp = client.get("/api/categories")
     assert resp.status_code == 200
     data = resp.get_json()
-    assert "Software Engineer" in data
+    assert "Software Engineering" in data
     assert len(data) > 0
 
 

@@ -16,7 +16,18 @@ from shared.db import create_app, ensure_schema
 from shared.gateway import JobDataGateway
 from shared.health_server import start_if_enabled as start_health_server
 
-DEFAULT_CATEGORIES = "Software Engineer,Data and Analytics,Data Science,DevOps and Sysadmin"
+DEFAULT_CATEGORIES = (
+    "Software Engineering,"
+    "Data and Analytics,"
+    "Data Science,"
+    "Design and UX,"
+    "Product,"
+    "Project Management,"
+    "Account Management,"
+    "Sales,"
+    "Customer Service"
+)
+DEFAULT_PAGES = 10
 
 
 def _notify_analyzer(total: int, log: logging.Logger) -> None:
@@ -73,7 +84,7 @@ def main() -> int:
     start_health_server()
 
     categories = load_categories()
-    pages = int(os.environ.get("COLLECTOR_PAGES", "5"))
+    pages = int(os.environ.get("COLLECTOR_PAGES", str(DEFAULT_PAGES)))
     log.info("categories=%s pages=%d", categories, pages)
 
     app = create_app("collector")

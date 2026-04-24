@@ -125,7 +125,7 @@ curl https://job-market-trend-analyzer.fly.dev/health
 # -> {"status":"healthy"}
 
 curl https://job-market-trend-analyzer.fly.dev/api/categories
-# -> ["Software Engineer","Data and Analytics","Data Science",...]
+# -> ["Software Engineering","Data and Analytics","Data Science",...]
 ```
 
 ## Continuous deployment

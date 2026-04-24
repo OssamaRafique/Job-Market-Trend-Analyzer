@@ -12,7 +12,7 @@ import os
 import sys
 from typing import Any
 
-from collector import collect_all, configure_logging, load_categories
+from collector import DEFAULT_PAGES, collect_all, configure_logging, load_categories
 from muse_client import MuseClient
 
 from shared.db import create_app, ensure_schema
@@ -26,7 +26,7 @@ def handle_message(payload: dict[str, Any], log: logging.Logger) -> None:
     log.info("collect_jobs payload=%s", payload)
 
     categories = load_categories()
-    pages = int(os.environ.get("COLLECTOR_PAGES", "5"))
+    pages = int(os.environ.get("COLLECTOR_PAGES", str(DEFAULT_PAGES)))
     app = create_app("collector-consumer")
     with app.app_context():
         ensure_schema()
