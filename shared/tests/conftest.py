@@ -36,6 +36,7 @@ requires_real_db = pytest.mark.skipif(
 def db_app():
     """Yield a Flask app bound to the real Postgres DB with a fresh schema."""
     from shared.db import create_app, db
+    from shared import models  # noqa: F401  register ORM tables on db.metadata
 
     app = create_app("shared-tests")
     with app.app_context():
