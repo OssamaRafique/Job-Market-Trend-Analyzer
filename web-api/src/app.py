@@ -24,7 +24,16 @@ def build_app() -> Flask:
 
     origins_env = os.environ.get("CORS_ORIGINS", "*")
     origins = [o.strip() for o in origins_env.split(",") if o.strip()] or "*"
-    CORS(app, resources={r"/api/*": {"origins": origins}})
+    # Cover /health and /metrics too so the frontend's status badge (and
+    # external uptime checks) can read them cross-origin.
+    CORS(
+        app,
+        resources={
+            r"/api/*": {"origins": origins},
+            r"/health": {"origins": origins},
+            r"/metrics": {"origins": origins},
+        },
+    )
 
     app.register_blueprint(health_bp)
     app.register_blueprint(api_bp, url_prefix="/api")

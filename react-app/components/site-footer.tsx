@@ -7,23 +7,24 @@ type Status = "unknown" | "healthy" | "degraded"
 
 export function SiteFooter() {
   const [status, setStatus] = useState<Status>("unknown")
-  const base = process.env.NEXT_PUBLIC_API_URL
 
   useEffect(() => {
-    if (!base) {
-      setStatus("unknown")
-      return
-    }
+    // Hit /health through Next's same-origin proxy (see next.config.mjs
+    // rewrites) so the probe isn't subject to CORS and works regardless of
+    // whether NEXT_PUBLIC_API_URL made it into the client bundle.
     const controller = new AbortController()
-    fetch(`${base}/health`, { signal: controller.signal })
+    fetch("/health", { signal: controller.signal, cache: "no-store" })
       .then(async (r) => {
         if (!r.ok) throw new Error("not ok")
         const data = (await r.json()) as { status?: string }
         setStatus(data.status === "healthy" ? "healthy" : "degraded")
       })
-      .catch(() => setStatus("degraded"))
+      .catch((err) => {
+        if (err?.name === "AbortError") return
+        setStatus("degraded")
+      })
     return () => controller.abort()
-  }, [base])
+  }, [])
 
   const label =
     status === "healthy" ? "API healthy" : status === "degraded" ? "API unreachable" : "Using local fixtures"
