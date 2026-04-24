@@ -158,14 +158,19 @@ export function TopNSelector({
 }
 
 export function LevelFilter({
+  levels,
   value,
   className,
 }: {
+  // Levels come from /api/levels so the dropdown matches the exact strings
+  // stored in the DB (e.g. "Senior Level", not "Senior"). Pass an empty array
+  // to hide the dropdown entirely.
+  levels: string[]
   value?: string
   className?: string
 }) {
   const setUrl = useUrlSetter()
-  const levels = ["Entry", "Mid", "Senior", "Staff", "Principal"]
+  if (!levels.length) return null
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
       <Label htmlFor="level-filter" className="text-xs text-muted-foreground">
@@ -175,7 +180,7 @@ export function LevelFilter({
         value={value ?? ALL_VALUE}
         onValueChange={(v) => setUrl({ level: v === ALL_VALUE ? null : v })}
       >
-        <SelectTrigger id="level-filter" className="w-full sm:w-[160px]">
+        <SelectTrigger id="level-filter" className="w-full sm:w-[180px]">
           <SelectValue placeholder="All levels" />
         </SelectTrigger>
         <SelectContent>

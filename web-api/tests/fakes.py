@@ -12,6 +12,7 @@ from shared.models import CompanyTrendRecord, JobRecord, SkillTrendRecord
 class FakeJobDataGateway:
     jobs: list[JobRecord] = field(default_factory=list)
     categories: list[str] = field(default_factory=list)
+    levels: list[str] = field(default_factory=list)
 
     def find_filtered(
         self,
@@ -35,6 +36,9 @@ class FakeJobDataGateway:
 
     def distinct_categories(self) -> list[str]:
         return list(self.categories)
+
+    def distinct_levels(self) -> list[str]:
+        return list(self.levels)
 
     def find_recent(self, days: int = 7) -> list[JobRecord]:
         return list(self.jobs)

@@ -105,6 +105,22 @@ def test_job_gateway_distinct_categories(db_app):
     assert sorted(categories) == ["Data Science", "Software Engineer"]
 
 
+def test_job_gateway_distinct_levels(db_app):
+    from shared.gateway import JobDataGateway
+
+    gateway = JobDataGateway()
+    gateway.create_many(
+        [
+            {"title": "A", "company": "X", "category": "SE", "level": "Senior Level", "location": ""},
+            {"title": "B", "company": "Y", "category": "SE", "level": "Mid Level", "location": ""},
+            {"title": "C", "company": "Z", "category": "SE", "level": "Senior Level", "location": ""},
+            {"title": "D", "company": "W", "category": "SE", "level": None, "location": ""},
+        ]
+    )
+    levels = gateway.distinct_levels()
+    assert sorted(levels) == ["Mid Level", "Senior Level"]
+
+
 def test_job_gateway_find_recent_respects_window(db_app):
     from shared.gateway import JobDataGateway
 

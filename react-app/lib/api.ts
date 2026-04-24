@@ -1,5 +1,6 @@
 import {
   FIXTURE_CATEGORIES,
+  FIXTURE_LEVELS,
   buildAllJobs,
   buildCompanyTrends,
   buildSkillTrends,
@@ -66,6 +67,10 @@ function toQuery(params: Record<string, string | number | undefined>): string {
 
 export async function getCategories(): Promise<ApiResult<Category[]>> {
   return withFallback<Category[]>("/api/categories", () => FIXTURE_CATEGORIES)
+}
+
+export async function getLevels(): Promise<ApiResult<string[]>> {
+  return withFallback<string[]>("/api/levels", () => FIXTURE_LEVELS)
 }
 
 export async function getSkillTrends(q: TrendsQuery = {}): Promise<ApiResult<SkillTrendPoint[]>> {

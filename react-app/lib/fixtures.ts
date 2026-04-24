@@ -12,6 +12,16 @@ export const FIXTURE_CATEGORIES: Category[] = [
   "Customer Service",
 ]
 
+// Mirror The Muse's experience-level vocabulary so the filter dropdown lines
+// up exactly with the values stored in the `jobs.level` column.
+export const FIXTURE_LEVELS: string[] = [
+  "Entry Level",
+  "Mid Level",
+  "Senior Level",
+  "Internship",
+  "Management",
+]
+
 // Returns an ISO-week string (e.g. "2026-W16") for `weeksAgo` weeks before now.
 function weekKey(weeksAgo: number): string {
   const now = new Date()

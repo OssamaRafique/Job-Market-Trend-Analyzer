@@ -12,6 +12,7 @@ from .metrics import (
     categories_requests_total,
     collect_triggers_total,
     jobs_requests_total,
+    levels_requests_total,
     trends_requests_total,
 )
 
@@ -69,6 +70,23 @@ def list_categories():
             "Customer Service",
         ]
     return jsonify(categories)
+
+
+@bp.get("/levels")
+def list_levels():
+    """Return the set of distinct experience levels actually present in the DB.
+
+    The Muse API uses values like "Entry Level", "Mid Level", "Senior Level",
+    "Internship", and "Management" — we surface them verbatim so the frontend
+    Level filter exactly matches what `find_filtered` will accept.
+    """
+    levels_requests_total.inc()
+    gateway = _job_gateway_factory()
+    levels = gateway.distinct_levels()
+    if not levels:
+        # Match the upstream Muse vocabulary so the empty-DB case still works.
+        levels = ["Entry Level", "Mid Level", "Senior Level", "Internship", "Management"]
+    return jsonify(levels)
 
 
 @bp.get("/trends/skills")

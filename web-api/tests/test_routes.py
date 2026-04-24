@@ -23,6 +23,7 @@ def app():
     jobs_fake = FakeJobDataGateway(
         jobs=sample_jobs(),
         categories=["Software Engineer", "Data Science"],
+        levels=["Senior Level", "Mid Level"],
     )
     trends_fake = FakeTrendDataGateway(
         skills=[
@@ -85,6 +86,25 @@ def test_categories_falls_back_to_defaults_when_empty(app):
     data = resp.get_json()
     assert "Software Engineering" in data
     assert len(data) > 0
+
+
+def test_levels_route_returns_distinct_levels(client):
+    resp = client.get("/api/levels")
+    assert resp.status_code == 200
+    assert resp.get_json() == ["Senior Level", "Mid Level"]
+
+
+def test_levels_falls_back_to_defaults_when_empty(app):
+    from src import routes
+
+    application, *_ = app
+    routes.set_gateway_factories(jobs=lambda: FakeJobDataGateway(levels=[]))
+    client = application.test_client()
+    resp = client.get("/api/levels")
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert "Senior Level" in data
+    assert "Mid Level" in data
 
 
 def test_jobs_returns_paginated_shape(client):

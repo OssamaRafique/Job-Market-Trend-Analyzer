@@ -10,7 +10,7 @@ import { FixturesBanner } from "@/components/fixtures-banner"
 import { JobsTable } from "@/components/jobs-table"
 import { PageHeader } from "@/components/page-header"
 import { PaginationControls } from "@/components/pagination-controls"
-import { getCategories, getJobs } from "@/lib/api"
+import { getCategories, getJobs, getLevels } from "@/lib/api"
 
 export const dynamic = "force-dynamic"
 
@@ -34,13 +34,15 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
   const offset = parseOffset(sp.offset)
   const limit = 25
 
-  const [categoriesRes, jobsRes] = await Promise.all([
+  const [categoriesRes, levelsRes, jobsRes] = await Promise.all([
     getCategories(),
+    getLevels(),
     getJobs({ category, level, location, offset, limit }),
   ])
 
-  const usingFixtures = categoriesRes.fromFixtures || jobsRes.fromFixtures
-  const firstError = categoriesRes.error ?? jobsRes.error
+  const usingFixtures =
+    categoriesRes.fromFixtures || levelsRes.fromFixtures || jobsRes.fromFixtures
+  const firstError = categoriesRes.error ?? levelsRes.error ?? jobsRes.error
 
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
@@ -51,7 +53,7 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
 
       <div className="flex flex-wrap items-end gap-4 rounded-lg border border-border bg-card p-4">
         <CategoryFilter categories={categoriesRes.data} value={category} />
-        <LevelFilter value={level} />
+        <LevelFilter levels={levelsRes.data} value={level} />
         <LocationSearch value={location} />
         <ClearFiltersButton keys={["category", "level", "location", "offset"]} className="mb-0.5" />
       </div>

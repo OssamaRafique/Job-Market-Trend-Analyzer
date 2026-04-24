@@ -166,6 +166,15 @@ class JobDataGateway:
         )
         return [row[0] for row in db.session.execute(stmt).all() if row[0]]
 
+    def distinct_levels(self) -> list[str]:
+        stmt = (
+            select(Job.level)
+            .where(Job.level.is_not(None))
+            .distinct()
+            .order_by(Job.level)
+        )
+        return [row[0] for row in db.session.execute(stmt).all() if row[0]]
+
     def count(self) -> int:
         return db.session.execute(select(func.count()).select_from(Job)).scalar_one()
 

@@ -19,6 +19,11 @@ categories_requests_total = Counter(
     "Number of /api/categories requests served",
 )
 
+levels_requests_total = Counter(
+    "jmta_levels_requests_total",
+    "Number of /api/levels requests served",
+)
+
 collect_triggers_total = Counter(
     "jmta_collect_triggers_total",
     "Number of POST /api/refresh calls",
