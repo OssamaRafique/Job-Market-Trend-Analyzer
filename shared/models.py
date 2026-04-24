@@ -16,6 +16,10 @@ class Job(db.Model):
     __tablename__ = "jobs"
 
     id = db.Column(db.Integer, primary_key=True)
+    # External identifier from the upstream API (e.g. The Muse job id). Nullable
+    # so rows collected before this column existed remain valid. Unique so we
+    # can reject duplicate ingests on the INSERT path.
+    source_id = db.Column(db.String(100), unique=True, index=True, nullable=True)
     title = db.Column(db.String(200), nullable=False)
     company = db.Column(db.String(200))
     category = db.Column(db.String(100))
@@ -66,6 +70,7 @@ class JobRecord:
     level: Optional[str]
     location: Optional[str]
     date_collected: datetime
+    source_id: Optional[str] = None
 
 
 @dataclass(frozen=True)

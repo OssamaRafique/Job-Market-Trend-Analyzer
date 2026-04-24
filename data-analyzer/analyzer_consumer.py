@@ -13,7 +13,7 @@ from typing import Any
 
 from analyzer import configure_logging, run_analysis
 
-from shared.db import create_app, db
+from shared.db import create_app, ensure_schema
 from shared.gateway import JobDataGateway, TrendDataGateway
 from shared.health_server import start_if_enabled as start_health_server
 from shared.messaging import ANALYZE_JOBS, consume_forever
@@ -25,7 +25,7 @@ def handle_message(payload: dict[str, Any], log: logging.Logger) -> None:
     days = int(os.environ.get("ANALYZER_WINDOW_DAYS", "28"))
     app = create_app("analyzer-consumer")
     with app.app_context():
-        db.create_all()
+        ensure_schema()
         skills, companies = run_analysis(
             JobDataGateway(), TrendDataGateway(), days, log
         )

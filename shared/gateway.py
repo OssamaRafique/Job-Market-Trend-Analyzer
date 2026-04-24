@@ -26,6 +26,7 @@ def _to_job_record(job: Job) -> JobRecord:
         level=job.level,
         location=job.location,
         date_collected=job.date_collected,
+        source_id=job.source_id,
     )
 
 
@@ -53,8 +54,10 @@ class JobDataGateway:
         level: Optional[str],
         location: Optional[str],
         date_collected: Optional[datetime] = None,
+        source_id: Optional[str] = None,
     ) -> JobRecord:
         job = Job(
+            source_id=source_id,
             title=title,
             company=company,
             category=category,
@@ -67,18 +70,50 @@ class JobDataGateway:
         return _to_job_record(job)
 
     def create_many(self, jobs: Iterable[dict]) -> int:
+        """Insert jobs, skipping rows whose ``source_id`` already exists.
+
+        Rows without a ``source_id`` are always inserted (the caller did not
+        provide an external identifier, so we cannot safely dedupe them).
+        Returns the number of rows actually inserted.
+        """
         now = datetime.utcnow()
-        rows = [
-            Job(
-                title=j["title"],
-                company=j.get("company"),
-                category=j.get("category"),
-                level=j.get("level"),
-                location=j.get("location"),
-                date_collected=j.get("date_collected") or now,
+        incoming = list(jobs)
+        if not incoming:
+            return 0
+
+        source_ids = {
+            str(j["source_id"])
+            for j in incoming
+            if j.get("source_id") is not None
+        }
+        existing: set[str] = set()
+        if source_ids:
+            stmt = select(Job.source_id).where(Job.source_id.in_(source_ids))
+            existing = {row[0] for row in db.session.execute(stmt).all() if row[0]}
+
+        rows: list[Job] = []
+        seen_in_batch: set[str] = set()
+        for j in incoming:
+            sid = j.get("source_id")
+            sid_str = str(sid) if sid is not None else None
+            if sid_str and (sid_str in existing or sid_str in seen_in_batch):
+                continue
+            if sid_str:
+                seen_in_batch.add(sid_str)
+            rows.append(
+                Job(
+                    source_id=sid_str,
+                    title=j["title"],
+                    company=j.get("company"),
+                    category=j.get("category"),
+                    level=j.get("level"),
+                    location=j.get("location"),
+                    date_collected=j.get("date_collected") or now,
+                )
             )
-            for j in jobs
-        ]
+
+        if not rows:
+            return 0
         db.session.add_all(rows)
         db.session.commit()
         return len(rows)

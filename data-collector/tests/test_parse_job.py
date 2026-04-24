@@ -6,6 +6,7 @@ from muse_client import MuseClient
 
 def test_parse_job_happy_path():
     raw = {
+        "id": 12345,
         "name": "Senior Python Developer",
         "company": {"name": "Acme"},
         "categories": [{"name": "Software Engineer"}],
@@ -14,6 +15,7 @@ def test_parse_job_happy_path():
     }
     result = MuseClient.parse_job(raw)
     assert result == {
+        "source_id": "12345",
         "title": "Senior Python Developer",
         "company": "Acme",
         "category": "Software Engineer",
@@ -29,6 +31,12 @@ def test_parse_job_missing_fields_defaults():
     assert result["category"] is None
     assert result["level"] is None
     assert result["location"] is None
+    assert result["source_id"] is None
+
+
+def test_parse_job_stringifies_numeric_source_id():
+    result = MuseClient.parse_job({"id": 42, "name": "x"})
+    assert result["source_id"] == "42"
 
 
 def test_parse_job_uses_first_category_when_multiple():

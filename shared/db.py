@@ -6,12 +6,15 @@ analyzer only need the context to talk to the database).
 """
 from __future__ import annotations
 
+import logging
 import os
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import inspect, text
 
 db = SQLAlchemy()
+logger = logging.getLogger(__name__)
 
 
 def _normalize_database_url(url: str) -> str:
@@ -45,3 +48,33 @@ def create_app(name: str = "jmta", *, testing: bool = False) -> Flask:
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     db.init_app(app)
     return app
+
+
+def ensure_schema() -> None:
+    """Create missing tables and apply lightweight, idempotent column adds.
+
+    We intentionally keep this very small: for richer changes we would bring
+    in Alembic. For now it only needs to run on each worker boot so that an
+    older ``jobs`` table provisioned before we introduced ``source_id`` gets
+    the column added automatically.
+
+    Must be called inside an active Flask app context.
+    """
+    db.create_all()
+
+    engine = db.engine
+    inspector = inspect(engine)
+    if "jobs" not in inspector.get_table_names():
+        return
+    columns = {col["name"] for col in inspector.get_columns("jobs")}
+    if "source_id" in columns:
+        return
+
+    logger.info("adding missing column jobs.source_id")
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE jobs ADD COLUMN source_id VARCHAR(100)"))
+        # Postgres permits multiple NULLs in a UNIQUE index, so rows collected
+        # before we introduced source_id (all NULL) coexist fine.
+        conn.execute(
+            text("CREATE UNIQUE INDEX IF NOT EXISTS ix_jobs_source_id ON jobs (source_id)")
+        )

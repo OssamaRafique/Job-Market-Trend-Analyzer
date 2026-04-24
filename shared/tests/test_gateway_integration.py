@@ -53,6 +53,43 @@ def test_job_gateway_create_many(db_app):
     assert gateway.count() == 2
 
 
+def test_job_gateway_create_many_skips_duplicate_source_ids(db_app):
+    from shared.gateway import JobDataGateway
+
+    gateway = JobDataGateway()
+    first = gateway.create_many(
+        [
+            {"source_id": "muse-1", "title": "A", "company": "X", "category": "SE", "level": "S", "location": "R"},
+            {"source_id": "muse-2", "title": "B", "company": "Y", "category": "SE", "level": "S", "location": "R"},
+        ]
+    )
+    assert first == 2
+
+    second = gateway.create_many(
+        [
+            {"source_id": "muse-2", "title": "B-dup", "company": "Y", "category": "SE", "level": "S", "location": "R"},
+            {"source_id": "muse-3", "title": "C", "company": "Z", "category": "SE", "level": "S", "location": "R"},
+        ]
+    )
+    assert second == 1
+    assert gateway.count() == 3
+
+
+def test_job_gateway_create_many_dedupes_within_same_batch(db_app):
+    from shared.gateway import JobDataGateway
+
+    gateway = JobDataGateway()
+    saved = gateway.create_many(
+        [
+            {"source_id": "dup", "title": "A", "company": "X", "category": "SE", "level": "S", "location": "R"},
+            {"source_id": "dup", "title": "A-again", "company": "X", "category": "SE", "level": "S", "location": "R"},
+            {"source_id": None, "title": "no-source", "company": "Y", "category": "SE", "level": "S", "location": "R"},
+        ]
+    )
+    assert saved == 2
+    assert gateway.count() == 2
+
+
 def test_job_gateway_distinct_categories(db_app):
     from shared.gateway import JobDataGateway
 

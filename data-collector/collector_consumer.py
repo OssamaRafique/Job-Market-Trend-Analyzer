@@ -15,7 +15,7 @@ from typing import Any
 from collector import collect_all, configure_logging, load_categories
 from muse_client import MuseClient
 
-from shared.db import create_app, db
+from shared.db import create_app, ensure_schema
 from shared.gateway import JobDataGateway
 from shared.health_server import start_if_enabled as start_health_server
 from shared.messaging import ANALYZE_JOBS, COLLECT_JOBS, consume_forever, publish
@@ -29,7 +29,7 @@ def handle_message(payload: dict[str, Any], log: logging.Logger) -> None:
     pages = int(os.environ.get("COLLECTOR_PAGES", "5"))
     app = create_app("collector-consumer")
     with app.app_context():
-        db.create_all()
+        ensure_schema()
         client = MuseClient(base_url=os.environ.get("MUSE_API_URL"))
         total = collect_all(client, JobDataGateway(), categories, pages, log)
 

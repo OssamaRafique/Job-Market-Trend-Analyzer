@@ -12,7 +12,7 @@ from flask import Flask
 from flask_cors import CORS
 
 from shared.db import create_app as create_shared_app
-from shared.db import db
+from shared.db import ensure_schema
 
 from .health import bp as health_bp
 from .routes import bp as api_bp
@@ -30,7 +30,7 @@ def build_app() -> Flask:
     app.register_blueprint(api_bp, url_prefix="/api")
 
     with app.app_context():
-        db.create_all()
+        ensure_schema()
 
     return app
 

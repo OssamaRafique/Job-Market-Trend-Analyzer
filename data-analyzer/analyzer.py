@@ -13,7 +13,7 @@ import sys
 
 from aggregations import aggregate_companies, aggregate_skills
 
-from shared.db import create_app, db
+from shared.db import create_app, ensure_schema
 from shared.gateway import JobDataGateway, TrendDataGateway
 from shared.health_server import start_if_enabled as start_health_server
 
@@ -66,7 +66,7 @@ def main() -> int:
 
     app = create_app("analyzer")
     with app.app_context():
-        db.create_all()
+        ensure_schema()
         run_analysis(JobDataGateway(), TrendDataGateway(), days, log)
 
     log.info("analyzer done")

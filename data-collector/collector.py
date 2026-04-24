@@ -12,7 +12,7 @@ import sys
 
 from muse_client import MuseClient
 
-from shared.db import create_app, db
+from shared.db import create_app, ensure_schema
 from shared.gateway import JobDataGateway
 from shared.health_server import start_if_enabled as start_health_server
 
@@ -78,7 +78,7 @@ def main() -> int:
 
     app = create_app("collector")
     with app.app_context():
-        db.create_all()
+        ensure_schema()
         client = MuseClient(base_url=os.environ.get("MUSE_API_URL"))
         gateway = JobDataGateway()
         total = collect_all(client, gateway, categories, pages, log)

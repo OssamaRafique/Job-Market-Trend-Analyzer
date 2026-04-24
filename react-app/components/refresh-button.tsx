@@ -6,33 +6,33 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 
-// Gated behind NEXT_PUBLIC_ENABLE_REFRESH. Matches section 5.6 of the UI spec.
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ||
+  "https://job-market-trend-analyzer.fly.dev"
+
 export function RefreshButton() {
   const router = useRouter()
   const [isSending, setIsSending] = useState(false)
   const [isPending, startTransition] = useTransition()
-  const enabled = process.env.NEXT_PUBLIC_ENABLE_REFRESH === "true"
-  const base = process.env.NEXT_PUBLIC_API_URL
-
-  if (!enabled) return null
 
   const onClick = async () => {
-    if (!base) {
-      toast.error("Refresh unavailable", {
-        description: "NEXT_PUBLIC_API_URL is not configured.",
-      })
-      return
-    }
     setIsSending(true)
     try {
-      const res = await fetch(`${base}/api/refresh`, { method: "POST" })
-      if (!res.ok && res.status !== 202) {
-        throw new Error(`Request failed: ${res.status}`)
+      const res = await fetch(`${API_BASE}/api/refresh`, { method: "POST" })
+      if (res.status === 202 || res.ok) {
+        toast.success("Refresh queued", {
+          description: "A new collection job has been enqueued. New data will appear shortly.",
+        })
+        startTransition(() => router.refresh())
+        return
       }
-      toast.success("Refresh queued", {
-        description: "A new collection job has been enqueued.",
-      })
-      startTransition(() => router.refresh())
+      if (res.status === 503) {
+        toast.error("Message broker unavailable", {
+          description: "The API could not reach RabbitMQ. Try again in a moment.",
+        })
+        return
+      }
+      throw new Error(`Request failed: ${res.status}`)
     } catch (err) {
       toast.error("Could not queue refresh", {
         description: err instanceof Error ? err.message : "Unknown error",
@@ -42,16 +42,20 @@ export function RefreshButton() {
     }
   }
 
+  const busy = isSending || isPending
+
   return (
     <Button
       variant="outline"
       size="sm"
       onClick={onClick}
-      disabled={isSending || isPending}
+      disabled={busy}
       className="gap-1.5"
+      aria-label="Fetch new jobs"
+      title="Fetch new jobs from The Muse"
     >
-      <RefreshCw className={`h-3.5 w-3.5 ${isSending ? "animate-spin" : ""}`} aria-hidden />
-      <span className="hidden sm:inline">Refresh data</span>
+      <RefreshCw className={`h-3.5 w-3.5 ${busy ? "animate-spin" : ""}`} aria-hidden />
+      <span className="hidden sm:inline">{busy ? "Fetching…" : "Fetch new data"}</span>
     </Button>
   )
 }

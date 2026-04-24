@@ -41,11 +41,17 @@ class MuseClient:
 
     @staticmethod
     def parse_job(raw: dict[str, Any]) -> dict[str, Any]:
-        """Normalise a Muse API job dict into our persistence shape."""
+        """Normalise a Muse API job dict into our persistence shape.
+
+        ``source_id`` is the stringified upstream job id when present; the
+        ``JobDataGateway`` uses it to skip postings we have already stored.
+        """
         categories = raw.get("categories") or [{}]
         levels = raw.get("levels") or [{}]
         locations = raw.get("locations") or [{}]
+        raw_id = raw.get("id")
         return {
+            "source_id": str(raw_id) if raw_id is not None else None,
             "title": raw.get("name") or "Unknown",
             "company": (raw.get("company") or {}).get("name"),
             "category": categories[0].get("name"),
