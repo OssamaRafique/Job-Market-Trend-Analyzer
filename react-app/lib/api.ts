@@ -14,7 +14,13 @@ import type {
   TrendsQuery,
 } from "./types"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? ""
+// NEXT_PUBLIC_API_URL is baked into the client bundle at build time. If the
+// build didn't receive it (e.g. Fly [env] only applies at runtime), we still
+// want real API traffic rather than silently falling back to fixtures — hence
+// the production URL as a last resort.
+const API_URL = (
+  process.env.NEXT_PUBLIC_API_URL || "https://job-market-trend-analyzer.fly.dev"
+).replace(/\/$/, "")
 
 export function isRefreshEnabled(): boolean {
   return process.env.NEXT_PUBLIC_ENABLE_REFRESH === "true"

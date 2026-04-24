@@ -1,12 +1,15 @@
 import type { Category, CompanyTrendPoint, JobPosting, SkillTrendPoint } from "./types"
 
 export const FIXTURE_CATEGORIES: Category[] = [
-  "Software Engineer",
+  "Software Engineering",
   "Data and Analytics",
   "Data Science",
-  "DevOps and Sysadmin",
-  "Product",
   "Design and UX",
+  "Product",
+  "Project Management",
+  "Account Management",
+  "Sales",
+  "Customer Service",
 ]
 
 // Returns an ISO-week string (e.g. "2026-W16") for `weeksAgo` weeks before now.
@@ -23,32 +26,32 @@ function weekKey(weeksAgo: number): string {
 }
 
 const SKILL_SEED: Record<string, { base: number; drift: number; category: string }> = {
-  python: { base: 148, drift: 6, category: "Software Engineer" },
-  typescript: { base: 132, drift: 4, category: "Software Engineer" },
-  kubernetes: { base: 96, drift: 8, category: "DevOps and Sysadmin" },
-  react: { base: 118, drift: 3, category: "Software Engineer" },
-  aws: { base: 104, drift: 5, category: "DevOps and Sysadmin" },
+  python: { base: 148, drift: 6, category: "Software Engineering" },
+  typescript: { base: 132, drift: 4, category: "Software Engineering" },
+  kubernetes: { base: 96, drift: 8, category: "Software Engineering" },
+  react: { base: 118, drift: 3, category: "Software Engineering" },
+  aws: { base: 104, drift: 5, category: "Software Engineering" },
   sql: { base: 142, drift: 2, category: "Data and Analytics" },
   pytorch: { base: 62, drift: 7, category: "Data Science" },
   tensorflow: { base: 48, drift: -2, category: "Data Science" },
-  go: { base: 54, drift: 6, category: "Software Engineer" },
-  rust: { base: 34, drift: 9, category: "Software Engineer" },
+  go: { base: 54, drift: 6, category: "Software Engineering" },
+  rust: { base: 34, drift: 9, category: "Software Engineering" },
   snowflake: { base: 58, drift: 4, category: "Data and Analytics" },
   airflow: { base: 44, drift: 3, category: "Data and Analytics" },
 }
 
 const COMPANY_SEED: Record<string, { base: number; drift: number; category: string }> = {
-  Stripe: { base: 36, drift: 2, category: "Software Engineer" },
-  Datadog: { base: 24, drift: 3, category: "DevOps and Sysadmin" },
-  Vercel: { base: 18, drift: 1, category: "Software Engineer" },
+  Stripe: { base: 36, drift: 2, category: "Software Engineering" },
+  Datadog: { base: 24, drift: 3, category: "Software Engineering" },
+  Vercel: { base: 18, drift: 1, category: "Software Engineering" },
   Snowflake: { base: 22, drift: 2, category: "Data and Analytics" },
   Databricks: { base: 28, drift: 3, category: "Data Science" },
-  Airbnb: { base: 20, drift: 1, category: "Software Engineer" },
-  Shopify: { base: 16, drift: 2, category: "Software Engineer" },
-  Cloudflare: { base: 19, drift: 2, category: "DevOps and Sysadmin" },
+  Airbnb: { base: 20, drift: 1, category: "Software Engineering" },
+  Shopify: { base: 16, drift: 2, category: "Software Engineering" },
+  Cloudflare: { base: 19, drift: 2, category: "Software Engineering" },
   Notion: { base: 12, drift: 1, category: "Product" },
   Figma: { base: 14, drift: 2, category: "Design and UX" },
-  Plaid: { base: 11, drift: 1, category: "Software Engineer" },
+  Plaid: { base: 11, drift: 1, category: "Software Engineering" },
   Linear: { base: 9, drift: 1, category: "Product" },
 }
 
@@ -102,12 +105,21 @@ const LOCATIONS = [
   "Seattle, WA",
 ]
 const TITLE_PREFIX: Record<string, string[]> = {
-  "Software Engineer": ["Software Engineer", "Backend Engineer", "Frontend Engineer", "Full Stack Engineer"],
+  "Software Engineering": [
+    "Software Engineer",
+    "Backend Engineer",
+    "Frontend Engineer",
+    "Full Stack Engineer",
+    "Site Reliability Engineer",
+  ],
   "Data and Analytics": ["Data Engineer", "Analytics Engineer", "Business Intelligence Analyst"],
   "Data Science": ["Data Scientist", "Machine Learning Engineer", "Applied Scientist"],
-  "DevOps and Sysadmin": ["DevOps Engineer", "Site Reliability Engineer", "Platform Engineer"],
-  Product: ["Product Manager", "Technical Product Manager", "Associate Product Manager"],
   "Design and UX": ["Product Designer", "UX Researcher", "Design Engineer"],
+  Product: ["Product Manager", "Technical Product Manager", "Associate Product Manager"],
+  "Project Management": ["Project Manager", "Technical Program Manager", "Scrum Master"],
+  "Account Management": ["Account Manager", "Customer Success Manager", "Strategic Account Executive"],
+  Sales: ["Account Executive", "Sales Development Representative", "Enterprise Sales Manager"],
+  "Customer Service": ["Support Specialist", "Customer Experience Lead", "Technical Support Engineer"],
 }
 
 // Generate a deterministic set of 240 job postings.

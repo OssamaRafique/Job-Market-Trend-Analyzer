@@ -5,6 +5,13 @@ org = "fantisco"
 [build]
   dockerfile = "Dockerfile"
 
+  # Build args so NEXT_PUBLIC_* vars are baked into the client bundle at build
+  # time. The [env] table below only applies at container runtime and is too
+  # late for Next's static bundling.
+  [build.args]
+    NEXT_PUBLIC_API_URL = "https://job-market-trend-analyzer.fly.dev"
+    NEXT_PUBLIC_ENABLE_REFRESH = "true"
+
 [env]
   NODE_ENV = "production"
   NEXT_PUBLIC_API_URL = "https://job-market-trend-analyzer.fly.dev"

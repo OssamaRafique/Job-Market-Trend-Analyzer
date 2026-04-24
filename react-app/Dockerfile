@@ -12,7 +12,14 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@latest --activate
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-ENV NEXT_TELEMETRY_DISABLED=1
+# NEXT_PUBLIC_* vars must be available at build time to be baked into the
+# client bundle. Fly's [env] table is runtime-only, so we pass these through
+# as build args (see [build.args] in fly.toml).
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_ENABLE_REFRESH
+ENV NEXT_TELEMETRY_DISABLED=1 \
+    NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
+    NEXT_PUBLIC_ENABLE_REFRESH=$NEXT_PUBLIC_ENABLE_REFRESH
 RUN pnpm run build
 
 FROM node:20-alpine AS runner
