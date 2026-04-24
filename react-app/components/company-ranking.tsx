@@ -16,7 +16,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
-import { formatWeekLabel, mostRecentWeek } from "@/lib/aggregations"
+import { formatWeekLabel } from "@/lib/aggregations"
 import type { CompanyTrendPoint } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
@@ -31,14 +31,18 @@ export function CompanyRanking({
   enableDetail?: boolean
   className?: string
 }) {
-  const latestWeek = useMemo(() => mostRecentWeek(points), [points])
-  const latest = useMemo(() => {
-    if (!latestWeek) return []
-    return points
-      .filter((p) => p.week === latestWeek)
+  // Aggregate postings across the full window supplied by the caller so the
+  // bar chart actually responds to the weeks selector. When the caller passes
+  // a single week (weeks=1), this collapses to the same ranking as before.
+  const ranking = useMemo(() => {
+    const totals = new Map<string, number>()
+    for (const p of points) {
+      totals.set(p.company, (totals.get(p.company) ?? 0) + p.count)
+    }
+    return Array.from(totals, ([company, count]) => ({ company, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, topN)
-  }, [points, latestWeek, topN])
+  }, [points, topN])
 
   const [selected, setSelected] = useState<string | null>(null)
   const sparkline = useMemo(() => {
@@ -56,7 +60,7 @@ export function CompanyRanking({
     count: { label: "Postings", color: "var(--color-chart-1)" },
   }
 
-  if (!latest.length) {
+  if (!ranking.length) {
     return (
       <div className="flex h-64 items-center justify-center rounded-lg border border-border bg-card text-sm text-muted-foreground">
         No company data available.
@@ -72,7 +76,7 @@ export function CompanyRanking({
         aria-label="Top hiring companies"
       >
         <BarChart
-          data={latest}
+          data={ranking}
           layout="vertical"
           margin={{ top: 4, right: 24, left: 8, bottom: 4 }}
         >
@@ -117,7 +121,7 @@ export function CompanyRanking({
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-sm font-semibold">Weekly sparkline</h3>
             <div className="flex flex-wrap gap-1.5">
-              {latest.map((c) => {
+              {ranking.map((c) => {
                 const active = c.company === selected
                 return (
                   <button
